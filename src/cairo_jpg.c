@@ -15,8 +15,8 @@
  * executable for testing of this code:
  * gcc -Wall -o cairo_jpg -DCAIRO_JPEG_MAIN `pkg-config cairo libjpeg --cflags --libs` cairo_jpg.c
  *
- * @author Bernhard R. Fischer, 2048R/5C5FFD47 bf@abenteuerland.at
- * @version 2016/01/01 r1922
+ * @author Bernhard R. Fischer, 4096R/8E24F29D bf@abenteuerland.at
+ * @version 2018/02/15
  * @license This code is free software. Do whatever you like to do with it.
  */
 
@@ -67,6 +67,45 @@
 #undef CAIRO_JPEG_TEST_SIMILAR
 #if defined(CAIRO_JPEG_TEST_SIMILAR) && defined(CAIRO_JPEG_MAIN)
 #include <cairo-pdf.h>
+#endif
+
+
+#ifndef LIBJPEG_TURBO_VERSION
+/*! This function makes a covnersion for "odd" pixel sizes which typically is a
+ * conversion from a 3-byte to a 4-byte (or more) pixel size or vice versa.
+ * The conversion is done from the source buffer src to the destination buffer
+ * dst. The caller MUST ensure that src and dst have the correct memory size.
+ * This is dw * num for dst and sw * num for src. src and dst may point to the
+ * same memory address.
+ * @param dst Pointer to destination buffer.
+ * @param dw Pixel width (in bytes) of pixels in destination buffer, dw >= 3.
+ * @param src Pointer to source buffer.
+ * @param sw Pixel width (in bytes) of pixels in source buffer, sw >= 3.
+ * @param num Number of pixels to convert, num >= 1;
+ */
+static void pix_conv(unsigned char *dst, int dw, const unsigned char *src, int sw, int num)
+{
+   int si, di;
+
+   // safety check
+   if (dw < 3 || sw < 3 || dst == NULL || src == NULL)
+      return;
+
+   num--;
+   for (si = num * sw, di = num * dw; si >= 0; si -= sw, di -= dw)
+   {
+#if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
+      dst[di + 2] = src[si    ];
+      dst[di + 1] = src[si + 1];
+      dst[di + 0] = src[si + 2];
+#else
+      // FIXME: This is untested, it may be wrong.
+      dst[di - 3] = src[si - 3];
+      dst[di - 2] = src[si - 2];
+      dst[di - 1] = src[si - 1];
+#endif
+   }
+}
 #endif
 
 
@@ -135,6 +174,7 @@ cairo_status_t cairo_image_surface_write_to_jpeg_mem(cairo_surface_t *sfc, unsig
    jpeg_mem_dest(&cinfo, data, len);
    cinfo.image_width = cairo_image_surface_get_width(sfc);
    cinfo.image_height = cairo_image_surface_get_height(sfc);
+#ifdef LIBJPEG_TURBO_VERSION
 #if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
    //cinfo.in_color_space = JCS_EXT_BGRX;
    cinfo.in_color_space = cairo_image_surface_get_format(sfc) == CAIRO_FORMAT_ARGB32 ? JCS_EXT_BGRA : JCS_EXT_BGRX;
@@ -143,6 +183,10 @@ cairo_status_t cairo_image_surface_write_to_jpeg_mem(cairo_surface_t *sfc, unsig
    cinfo.in_color_space = cairo_image_surface_get_format(sfc) == CAIRO_FORMAT_ARGB32 ? JCS_EXT_ARGB : JCS_EXT_XRGB;
 #endif
    cinfo.input_components = 4;
+#else
+   cinfo.in_color_space = JCS_RGB;
+   cinfo.input_components = 3;
+#endif
    jpeg_set_defaults(&cinfo);
    jpeg_set_quality(&cinfo, quality, TRUE);
 
@@ -152,8 +196,15 @@ cairo_status_t cairo_image_surface_write_to_jpeg_mem(cairo_surface_t *sfc, unsig
    // loop over all lines and compress
    while (cinfo.next_scanline < cinfo.image_height)
    {
+#ifdef LIBJPEG_TURBO_VERSION
       row_pointer[0] = cairo_image_surface_get_data(sfc) + (cinfo.next_scanline
             * cairo_image_surface_get_stride(sfc));
+#else
+      unsigned char row_buf[3 * cinfo.image_width];
+      pix_conv(row_buf, 3, cairo_image_surface_get_data(sfc) +
+            (cinfo.next_scanline * cairo_image_surface_get_stride(sfc)), 4, cinfo.image_width);
+      row_pointer[0] = row_buf;
+#endif
       (void) jpeg_write_scanlines(&cinfo, row_pointer, 1);
    }
 
@@ -243,6 +294,7 @@ cairo_status_t cairo_image_surface_write_to_jpeg(cairo_surface_t *sfc, const cha
 }
 
 
+
 /*! This function decompresses a JPEG image from a memory buffer and creates a
  * Cairo image surface.
  * @param data Pointer to JPEG data (i.e. the full contents of a JPEG file read
@@ -264,10 +316,14 @@ cairo_surface_t *cairo_image_surface_create_from_jpeg_mem(void *data, size_t len
    jpeg_mem_src(&cinfo, data, len);
    (void) jpeg_read_header(&cinfo, TRUE);
 
+#ifdef LIBJPEG_TURBO_VERSION
 #if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
    cinfo.out_color_space = JCS_EXT_BGRA;
 #else
    cinfo.out_color_space = JCS_EXT_ARGB;
+#endif
+#else
+   cinfo.out_color_space = JCS_RGB;
 #endif
 
    // start decompressor
@@ -284,9 +340,13 @@ cairo_surface_t *cairo_image_surface_create_from_jpeg_mem(void *data, size_t len
    // loop over all scanlines and fill Cairo image surface
    while (cinfo.output_scanline < cinfo.output_height)
    {
-      row_pointer[0] = cairo_image_surface_get_data(sfc) +
+      unsigned char *row_address = cairo_image_surface_get_data(sfc) +
          (cinfo.output_scanline * cairo_image_surface_get_stride(sfc));
+      row_pointer[0] = row_address;
       (void) jpeg_read_scanlines(&cinfo, row_pointer, 1);
+#ifndef LIBJPEG_TURBO_VERSION
+      pix_conv(row_address, 4, row_address, 3, cinfo.output_width);
+#endif
    }
 
    // finish and close everything

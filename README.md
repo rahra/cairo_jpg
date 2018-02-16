@@ -10,10 +10,11 @@ support](http://www.cairographics.org/manual/cairo-PNG-Support.html).
 
 The implementation is done on top of the Cairo API. It does not access
 Cairo-internal functions.
-For compression and decompression [libjpeg](http://libjpeg.sourceforge.net/) is
-used.
+For compression and decompression a JPEG library is used. It compiles against
+[libjpeg-turbo](https://libjpeg-turbo.org/) or the original
+[libjpeg](http://www.ijg.org/).
 
-The following prototypes are implemented. Their functionallity is equal to the
+The following prototypes are implemented. Their functionality is equal to the
 PNG functions of Cairo with the advance that there are memory-buffer-based
 functions as well.
 
@@ -35,4 +36,13 @@ gcc -Wall -c `pkg-config cairo libjpeg --cflags --libs` cairo_jpg.c
 
 Please have a look at the comments within the source files for further details.
 Don't hesitate to contact me at [bf@abenteuerland.at](mailto:bf@abenteuerland.at).
+
+## Testing
+
+There is a ```main()``` function implemented which serves as demonstrational
+purpose and for testing. To compile with the ```main()``` function run the
+following statement:
+```Shell
+gcc -Wall -o cairo_jpg -DCAIRO_JPEG_MAIN `pkg-config cairo libjpeg --cflags --libs` cairo_jpg.c
+```
 
