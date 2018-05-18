@@ -122,7 +122,7 @@ static void pix_conv(unsigned char *dst, int dw, const unsigned char *src, int s
  * to RGB24 before calling this function.
  * @param data Pointer to a memory pointer. This parameter receives a pointer
  * to the memory area where the final JPEG data is found in memory. This
- * function reservers the memory properly and it has to be freed by the caller
+ * function reserves the memory properly and it has to be freed by the caller
  * with free(3).
  * @param len Pointer to a variable of type size_t which will receive the final
  * lenght of the memory buffer.
@@ -274,7 +274,6 @@ cairo_status_t cairo_image_surface_write_to_jpeg_stream(cairo_surface_t *sfc, ca
  * returned. The error can be tracked down by inspecting errno(3). The function
  * internally calles cairo_image_surface_write_to_jpeg_stream() and returnes
  * its return value respectively (see there).
- * returns its return value.
  */
 cairo_status_t cairo_image_surface_write_to_jpeg(cairo_surface_t *sfc, const char *filename, int quality)
 {
