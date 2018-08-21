@@ -19,6 +19,10 @@
  * the user if cairo_image_surface_create_from_jpeg_stream() is used. Please
  * note that this prototype is slightly different from cairo_read_func_t which
  * is used by cairo_image_surface_create_from_png_stream().
+ * This new prototype is defined because the original prototype
+ * cairo_read_func_t does not allow to detect truncated reads. This issue was
+ * discussed on the cairographics mailinglist, see
+ * https://lists.cairographics.org/archives/cairo/2016-March/027298.html
  * @param closure This parameter is directly passed through by
  * cairo_image_surface_create_from_jpeg_stream().
  * @param data Pointer to data buffer which will receive the data.
