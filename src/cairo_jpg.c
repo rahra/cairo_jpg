@@ -10,13 +10,13 @@
  * To compile this code you need to have installed the packages libcairo2-dev
  * and libjpeg-dev. Compile with the following to create an object file to link
  * with your code:
- * gcc -Wall -c `pkg-config cairo libjpeg --cflags --libs` cairo_jpg.c
+ * gcc -std=c99 -Wall -c `pkg-config cairo libjpeg --cflags --libs` cairo_jpg.c
  * Use the following command to include the main() function and create an
  * executable for testing of this code:
- * gcc -Wall -o cairo_jpg -DCAIRO_JPEG_MAIN `pkg-config cairo libjpeg --cflags --libs` cairo_jpg.c
+ * gcc -std=c99 -Wall -o cairo_jpg -DCAIRO_JPEG_MAIN `pkg-config cairo libjpeg --cflags --libs` cairo_jpg.c
  *
  * @author Bernhard R. Fischer, 4096R/8E24F29D bf@abenteuerland.at
- * @version 2018/02/15
+ * @version 2018/08/27
  * @license This code is free software. Do whatever you like to do with it.
  */
 
@@ -25,6 +25,7 @@
 #endif
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdint.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
@@ -225,7 +226,7 @@ cairo_status_t cairo_image_surface_write_to_jpeg_mem(cairo_surface_t *sfc, unsig
  */
 static cairo_status_t cj_write(void *closure, const unsigned char *data, unsigned int length)
 {
-   return write((long) closure, data, length) < length ?
+   return write((intptr_t) closure, data, length) < length ?
       CAIRO_STATUS_WRITE_ERROR : CAIRO_STATUS_SUCCESS;
 }
 
@@ -285,7 +286,7 @@ cairo_status_t cairo_image_surface_write_to_jpeg(cairo_surface_t *sfc, const cha
       return CAIRO_STATUS_DEVICE_ERROR;
 
    // write surface to file
-   e = cairo_image_surface_write_to_jpeg_stream(sfc, cj_write, (void*) (long) outfile, quality);
+   e = cairo_image_surface_write_to_jpeg_stream(sfc, cj_write, (void*)(intptr_t) outfile, quality);
 
    // close file again and return
    close(outfile);
@@ -467,12 +468,12 @@ cairo_surface_t *cairo_image_surface_create_from_jpeg(const char *filename)
 #ifdef USE_CAIRO_READ_FUNC_LEN_T
 static ssize_t cj_read(void *closure, unsigned char *data, unsigned int length)
 {
-   return read((long) closure, data, length);
+   return read((intptr_t) closure, data, length);
 }
 #else
 static cairo_status_t cj_read(void *closure, unsigned char *data, unsigned int length)
 {
-   return read((long) closure, data, length) < length ? CAIRO_STATUS_READ_ERROR : CAIRO_STATUS_SUCCESS;
+   return read((intptr_t) closure, data, length) < length ? CAIRO_STATUS_READ_ERROR : CAIRO_STATUS_SUCCESS;
 }
 #endif
 
@@ -498,7 +499,7 @@ cairo_surface_t *cairo_image_surface_create_from_jpeg(const char *filename)
       return cairo_image_surface_create(CAIRO_FORMAT_INVALID, 0, 0);
 
    // call stream loading function
-   sfc = cairo_image_surface_create_from_jpeg_stream(cj_read, (void*)(long) infile);
+   sfc = cairo_image_surface_create_from_jpeg_stream(cj_read, (void*)(intptr_t) infile);
    close(infile);
 
    return sfc;
@@ -509,10 +510,11 @@ cairo_surface_t *cairo_image_surface_create_from_jpeg(const char *filename)
 
 #ifdef CAIRO_JPEG_MAIN
 #include <string.h>
+#include <strings.h>
 
 int strrcasecmp(const char *s1, const char *s2)
 {
-   size_t off = strlen(s1) - strlen(s2);
+   int off = (int) strlen(s1) - (int) strlen(s2); // typecast size_t to int because size_t typically is unsigned
    return strcasecmp(s1 + (off < 0 ? 0 : off), s2);
 }
 
