@@ -1,12 +1,31 @@
+/* Copyright 2018 Bernhard R. Fischer, 4096R/8E24F29D <bf@abenteuerland.at>
+ *
+ * This file is part of Cairo_JPG.
+ *
+ * Cairo_JPG is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Cairo_JPG is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Cairo_JPG.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 #ifndef CAIRO_JPEG_H
 #define CAIRO_JPEG_H
 
-/*! This file contains all prototypes for the Cairo-JPEG functions implemented
+/*! \file cairo_jpg.h
+ * This file contains all prototypes for the Cairo-JPEG functions implemented
  * in cairo_jpg.c. See there for the function documentation.
  *
- * @author Bernhard R. Fischer, 2048R/5C5FFD47 bf@abenteuerland.at
- * @version 2016/01/01 r1922
- * @license This code is free software. Do whatever you like to do with it.
+ * @author Bernhard R. Fischer, 4096R/8E24F29D <bf@abenteuerland.at>
+ * @version 2018/12/11
+ * @license LGPL3
  */
 
 #ifdef HAVE_CONFIG_H

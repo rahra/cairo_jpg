@@ -1,4 +1,23 @@
-/*! This file contains two functions for reading and writing JPEG files from
+/* Copyright 2018 Bernhard R. Fischer, 4096R/8E24F29D <bf@abenteuerland.at>
+ *
+ * This file is part of Cairo_JPG.
+ *
+ * Cairo_JPG is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Cairo_JPG is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Cairo_JPG.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
+/*! \file cairo_jpg.c
+ * This file contains two functions for reading and writing JPEG files from
  * and to Cairo image surfaces. It uses the functions from the libjpeg.
  * Most of the code is directly derived from the online example at
  * http://libjpeg-turbo.virtualgl.org/Documentation/Documentation
@@ -16,8 +35,8 @@
  * gcc -std=c99 -Wall -o cairo_jpg -DCAIRO_JPEG_MAIN `pkg-config cairo libjpeg --cflags --libs` cairo_jpg.c
  *
  * @author Bernhard R. Fischer, 4096R/8E24F29D bf@abenteuerland.at
- * @version 2018/08/27
- * @license This code is free software. Do whatever you like to do with it.
+ * @version 2018/12/11
+ * @license LGPL3.
  */
 
 #ifdef HAVE_CONFIG_H
