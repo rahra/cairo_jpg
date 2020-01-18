@@ -35,7 +35,7 @@
  * gcc -std=c99 -Wall -o cairo_jpg -DCAIRO_JPEG_MAIN `pkg-config cairo libjpeg --cflags --libs` cairo_jpg.c
  *
  * @author Bernhard R. Fischer, 4096R/8E24F29D bf@abenteuerland.at
- * @version 2018/12/11
+ * @version 2020/01/18
  * @license LGPL3.
  */
 
@@ -380,7 +380,7 @@ cairo_surface_t *cairo_image_surface_create_from_jpeg_mem(void *data, size_t len
 }
 
 
-/*! This function reads an JPEG image from a stream and creates a Cairo image
+/*! This function reads a JPEG image from a stream and creates a Cairo image
  * surface.
  * @param read_func Pointer to function which reads data.
  * @param closure Pointer which is passed to read_func().
@@ -397,6 +397,7 @@ cairo_surface_t *cairo_image_surface_create_from_jpeg_stream(cairo_read_func_len
 cairo_surface_t *cairo_image_surface_create_from_jpeg_stream(cairo_read_func_t read_func, void *closure)
 #endif
 {
+   cairo_surface_t *sfc;
    void *data, *tmp;
    ssize_t len, rlen;
    int eof = 0;
@@ -434,7 +435,11 @@ cairo_surface_t *cairo_image_surface_create_from_jpeg_stream(cairo_read_func_t r
    }
 
    // call jpeg decompression and return surface
-   return cairo_image_surface_create_from_jpeg_mem(data, len);
+   sfc = cairo_image_surface_create_from_jpeg_mem(data, len);
+   if (cairo_surface_status(sfc) != CAIRO_STATUS_SUCCESS)
+      free(data);
+
+   return sfc;
 }
 
 
