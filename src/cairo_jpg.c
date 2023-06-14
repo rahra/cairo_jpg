@@ -48,7 +48,15 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#if defined(_WIN32) || defined(_WIN64) 
+#include <io.h>
+#else
 #include <unistd.h>
+#ifndef O_BINARY
+#define O_BINARY 0
+#endif
+#endif
+
 #include <cairo.h>
 #include <jpeglib.h>
 
@@ -191,7 +199,8 @@ cairo_status_t cairo_image_surface_write_to_jpeg_mem(cairo_surface_t *sfc, unsig
    jpeg_create_compress(&cinfo);
 
    // set compression parameters
-   jpeg_mem_dest(&cinfo, data, len);
+   unsigned long jpeg_len = *len;
+   jpeg_mem_dest(&cinfo, data, &jpeg_len);
    cinfo.image_width = cairo_image_surface_get_width(sfc);
    cinfo.image_height = cairo_image_surface_get_height(sfc);
 #ifdef LIBJPEG_TURBO_VERSION
@@ -213,16 +222,18 @@ cairo_status_t cairo_image_surface_write_to_jpeg_mem(cairo_surface_t *sfc, unsig
    // start compressor
    jpeg_start_compress(&cinfo, TRUE);
 
+   unsigned char * pixels = cairo_image_surface_get_data(sfc);
+   int stride = cairo_image_surface_get_stride(sfc);
+
    // loop over all lines and compress
    while (cinfo.next_scanline < cinfo.image_height)
    {
 #ifdef LIBJPEG_TURBO_VERSION
-      row_pointer[0] = cairo_image_surface_get_data(sfc) + (cinfo.next_scanline
-            * cairo_image_surface_get_stride(sfc));
+      row_pointer[0] = pixels + (cinfo.next_scanline * stride);
 #else
       unsigned char row_buf[3 * cinfo.image_width];
-      pix_conv(row_buf, 3, cairo_image_surface_get_data(sfc) +
-            (cinfo.next_scanline * cairo_image_surface_get_stride(sfc)), 4, cinfo.image_width);
+      pix_conv(row_buf, 3, pixels +
+            (cinfo.next_scanline * stride), 4, cinfo.image_width);
       row_pointer[0] = row_buf;
 #endif
       (void) jpeg_write_scanlines(&cinfo, row_pointer, 1);
@@ -231,6 +242,7 @@ cairo_status_t cairo_image_surface_write_to_jpeg_mem(cairo_surface_t *sfc, unsig
    // finalize and close everything
    jpeg_finish_compress(&cinfo);
    jpeg_destroy_compress(&cinfo);
+   *len = jpeg_len;
 
    // destroy temporary image surface (if available)
    if (other != NULL)
@@ -245,7 +257,7 @@ cairo_status_t cairo_image_surface_write_to_jpeg_mem(cairo_surface_t *sfc, unsig
  */
 static cairo_status_t cj_write(void *closure, const unsigned char *data, unsigned int length)
 {
-   return write((intptr_t) closure, data, length) < length ?
+   return write((intptr_t) closure, data, (size_t)length) < (ssize_t)length ?
       CAIRO_STATUS_WRITE_ERROR : CAIRO_STATUS_SUCCESS;
 }
 
@@ -301,7 +313,7 @@ cairo_status_t cairo_image_surface_write_to_jpeg(cairo_surface_t *sfc, const cha
    int outfile;
 
    // Open/create new file
-   if ((outfile = open(filename, O_WRONLY | O_CREAT, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH)) == -1)
+   if ((outfile = open(filename, O_BINARY | O_WRONLY | O_CREAT, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH)) == -1)
       return CAIRO_STATUS_DEVICE_ERROR;
 
    // write surface to file
@@ -398,7 +410,7 @@ cairo_surface_t *cairo_image_surface_create_from_jpeg_stream(cairo_read_func_t r
 #endif
 {
    cairo_surface_t *sfc;
-   void *data, *tmp;
+   unsigned char *data, *tmp;
    ssize_t len, rlen;
    int eof = 0;
 
@@ -462,7 +474,7 @@ cairo_surface_t *cairo_image_surface_create_from_jpeg(const char *filename)
    struct stat stat;
 
    // open input file
-   if ((infile = open(filename, O_RDONLY)) == -1)
+   if ((infile = open(filename, O_BINARY | O_RDONLY)) == -1)
       return cairo_image_surface_create(CAIRO_FORMAT_INVALID, 0, 0);
 
    // get stat structure for file size

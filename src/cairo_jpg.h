@@ -33,6 +33,8 @@
 #endif
 #include <cairo.h>
 
+CAIRO_BEGIN_DECLS
+
 #ifdef USE_CAIRO_READ_FUNC_LEN_T
 /*! This is the type for the stream read function. Which must be implemented by
  * the user if cairo_image_surface_create_from_jpeg_stream() is used. Please
@@ -65,6 +67,8 @@ cairo_surface_t *cairo_image_surface_create_from_jpeg_stream(cairo_read_func_len
 cairo_surface_t *cairo_image_surface_create_from_jpeg_stream(cairo_read_func_t read_func, void *closure);
 #endif
 cairo_surface_t *cairo_image_surface_create_from_jpeg(const char *filename);
+
+CAIRO_END_DECLS
 
 #endif
 
