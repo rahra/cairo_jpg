@@ -1,4 +1,4 @@
-/* Copyright 2018 Bernhard R. Fischer, 4096R/8E24F29D <bf@abenteuerland.at>
+/* Copyright 2018-2024 Bernhard R. Fischer, 4096R/8E24F29D <bf@abenteuerland.at>
  *
  * This file is part of Cairo_JPG.
  *
@@ -29,10 +29,10 @@
  * To compile this code you need to have installed the packages libcairo2-dev
  * and libjpeg-dev. Compile with the following to create an object file to link
  * with your code:
- * gcc -std=c99 -Wall -c `pkg-config cairo libjpeg --cflags --libs` cairo_jpg.c
+ * gcc -std=c99 -Wall -c `pkg-config cairo libjpeg --cflags` cairo_jpg.c
  * Use the following command to include the main() function and create an
  * executable for testing of this code:
- * gcc -std=c99 -Wall -o cairo_jpg -DCAIRO_JPEG_MAIN `pkg-config cairo libjpeg --cflags --libs` cairo_jpg.c
+ * gcc -std=c99 -Wall -o cairo_jpg -DCAIRO_JPEG_MAIN `pkg-config cairo libjpeg --cflags` cairo_jpg.c `pkg-config cairo libjpeg --libs`
  *
  * @author Bernhard R. Fischer, 4096R/8E24F29D bf@abenteuerland.at
  * @version 2020/01/18

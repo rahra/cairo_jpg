@@ -31,7 +31,7 @@ To compile this code you need to have installed the packages libcairo2-dev
 and libjpeg-dev. Compile with the following command to create an object file
 linkable to your code:
 ```Shell
-gcc -Wall -c `pkg-config cairo libjpeg --cflags --libs` cairo_jpg.c
+gcc -Wall -c cairo_jpg.c `pkg-config cairo libjpeg --cflags --libs`
 ```
 
 Please have a look at the comments within the source files for further details.
@@ -43,7 +43,7 @@ There is a ```main()``` function implemented which serves as demonstrational
 purpose and for testing. To compile with the ```main()``` function run the
 following statement:
 ```Shell
-gcc -Wall -o cairo_jpg -DCAIRO_JPEG_MAIN `pkg-config cairo libjpeg --cflags --libs` cairo_jpg.c
+gcc -Wall -o cairo_jpg -DCAIRO_JPEG_MAIN `pkg-config cairo libjpeg --cflags` cairo_jpg.c `pkg-config cairo libjpeg --libs`
 ```
 
 ## License
