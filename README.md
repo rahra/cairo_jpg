@@ -34,6 +34,12 @@ linkable to your code:
 gcc -Wall -c cairo_jpg.c `pkg-config cairo libjpeg --cflags --libs`
 ```
 
+Or use meson to create a library:
+```Shell
+meson setup build
+meson compile -Cbuild
+```
+
 Please have a look at the comments within the source files for further details.
 Don't hesitate to contact me at [bf@abenteuerland.at](mailto:bf@abenteuerland.at).
 
